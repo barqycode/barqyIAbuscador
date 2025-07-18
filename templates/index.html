@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscador BarQy</title>
+    <style>
+        .input-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        input[type="text"] {
+            padding-right: 30px; /* espacio para el botón de borrado */
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #888;
+        }
+
+        .clear-btn:hover {
+            color: #000;
+        }
+
+        ul {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>BarQy IA Buscador</h1>
+
+    <!-- FORMULARIO PRINCIPAL CON UN SOLO INPUT -->
+    <form method="post">
+        <div class="input-container">
+            <input type="text" name="consulta" id="consulta" placeholder="¿Qué quieres buscar?"
+                   value="{{ consulta if consulta else '' }}" size="60" autocomplete="off">
+            <button type="button" class="clear-btn" onclick="document.getElementById('consulta').value = '';">×</button>
+        </div>
+        <input type="hidden" name="tipo" id="tipo" value="{{ tipo }}">
+        <button type="submit">Buscar</button>
+    </form>
+
+    <!-- Botones para cambiar tipo de búsqueda -->
+    <div style="margin-top: 10px;">
+        <button onclick="cambiarTipo('texto')">📝 Texto</button>
+        <button onclick="cambiarTipo('imagenes')">🖼️ Imágenes</button>
+        <button onclick="cambiarTipo('videos')">📹 Videos</button>
+    </div>
+
+    <script>
+        function cambiarTipo(tipo) {
+            document.getElementById('tipo').value = tipo;
+            document.forms[0].submit();
+        }
+    </script>
+
+    <!-- RESULTADOS DEPENDIENDO DEL TIPO -->
+    {% if tipo == "texto" %}
+        <h2>Resultados para: "{{ consulta }}"</h2>
+        {% for sim, url, texto in resultados %}
+            <div style="margin-bottom: 15px;">
+                <a href="{{ url }}" target="_blank"><strong>{{ url }}</strong></a>
+                <p>{{ texto }}</p>
+            </div>
+        {% endfor %}
+    {% elif tipo == "imagenes" %}
+        <h2>Imágenes relacionadas con: "{{ consulta }}"</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            {% for url, titulo, fuente in imagenes %}
+                <div style="flex: 0 0 200px; text-align: center;">
+                    <a href="{{ fuente }}" target="_blank">
+                        <img src="{{ url }}" alt="{{ titulo }}" width="200" style="border-radius: 8px; border: 1px solid #ccc;">
+                    </a>
+                    <p style="font-size: 0.8em;">{{ titulo }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% elif tipo == "videos" %}
+        <h2>Videos sobre: "{{ consulta }}"</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+            {% for url, titulo, fuente, imagen in videos %}
+                <div style="width: 300px; border: 1px solid #ccc; border-radius: 10px; overflow: hidden; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
+                    <a href="{{ url }}" target="_blank" style="text-decoration: none; color: black;">
+                        {% if imagen %}
+                            <img src="{{ imagen }}" alt="{{ titulo }}" width="100%" height="170" style="object-fit: cover;">
+                        {% else %}
+                            <div style="width: 100%; height: 170px; background-color: #ddd; display: flex; align-items: center; justify-content: center;">
+                                <span style="color: #555;">Sin imagen</span>
+                            </div>
+                        {% endif %}
+                        <div style="padding: 10px;">
+                            <p style="margin: 0; font-weight: bold;">{{ titulo }}</p>
+                            <small style="color: gray;">Fuente: {{ fuente }}</small>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+</body>
+</html>
